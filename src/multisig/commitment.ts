@@ -25,6 +25,7 @@ export const commit = async (
   data: MultiSigData,
   prover: Wallet,
   network: Network,
+  pks: { [address: string]: string[] },
 ): Promise<MultiSigData> => {
   const myCommitments = await generateCommitments(prover, tx);
   const unsigned = tx.unsigned_tx();
@@ -33,12 +34,14 @@ export const commit = async (
     boxes,
     myCommitments.public,
     network,
+    pks,
   );
   const own = await hintBagToArray(
     unsigned,
     boxes,
     myCommitments.private,
     network,
+    pks,
     'mypw',
   );
   const newCommitments = overridePublicCommitments(data.commitments, known);
@@ -87,9 +90,10 @@ const hintBagToArray = async (
   boxes: Array<ErgoBox>,
   commitment: TransactionHintsBag,
   network: Network,
+  pks: { [address: string]: string[] },
   password?: string,
 ) => {
-  const inputPKs = await getInputPks(tx, boxes, network);
+  const inputPKs = await getInputPks(tx, boxes, network, pks);
   return commitmentToByte(commitment, inputPKs, password);
 };
 
@@ -120,15 +124,9 @@ const getInputPks = async (
   tx: UnsignedTransaction | Transaction,
   boxes: Array<ErgoBox>,
   network: Network,
+  pks: { [address: string]: string[] },
 ): Promise<Array<Array<string>>> => {
   // const pks: { [address: string]: string[] } = { multisigAddr: ['pubKey', 'pubkey'] };
-  const pks: { [address: string]: string[] } = {
-    gG26HKJqFfxo7wEyBmjX7BYZURh3pojtMdxhuf3jcVR5QdUgR2rxLMxQqDnVCL77Q3YL5KncqftcD8JaAjcdQ45tRgZDQruFF9aihKaeT3bnFAVWSnvog5c58:
-      [
-        '02aa9ef05d5a178d53bd34be0730c958f82155307e7e2e2a436f60a5414dbcaf04',
-        '03ef05f4324f39ddeb57e21c88e5c9d3ed2653af30aeec65b70f836ce259a69a20',
-      ],
-  };
   const inputMap = await getInputMap(boxes, network);
   const inputs = tx.inputs();
   return createEmptyArrayWithIndex(inputs.len())

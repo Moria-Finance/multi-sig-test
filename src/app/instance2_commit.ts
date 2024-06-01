@@ -55,12 +55,21 @@ const wasmInputs = inputs!.map((input) =>
 
 const wallet = new BackendWallet(mnemonic2, mnemonicPw, Network.Testnet); // Phone
 
+const pks: { [address: string]: string[] } = {
+  gG26HKJqFfxo7wEyBmjX7BYZURh3pojtMdxhuf3jcVR5QdUgR2rxLMxQqDnVCL77Q3YL5KncqftcD8JaAjcdQ45tRgZDQruFF9aihKaeT3bnFAVWSnvog5c58:
+    [
+      '02aa9ef05d5a178d53bd34be0730c958f82155307e7e2e2a436f60a5414dbcaf04',
+      '03ef05f4324f39ddeb57e21c88e5c9d3ed2653af30aeec65b70f836ce259a69a20',
+    ],
+};
+
 const commitmentResult = await commit(
   reducedTransaction,
   wasmInputs,
   data,
   wallet.getWallet(0),
   Network.Testnet,
+  pks,
 );
 
 console.log(commitmentResult);
