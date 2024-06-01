@@ -34,6 +34,7 @@
     "@fleet-sdk/core": "^0.3.4",
     "@fleet-sdk/crypto": "^0.3.4",
     "@fleet-sdk/serializer": "^0.2.3",
+    "@supabase/supabase-js": "^2.43.4",
     "axios": "^1.5.1",
     "bip32": "^4.0.0",
     "crypto-js": "^4.2.0",
