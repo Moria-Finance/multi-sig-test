@@ -1,0 +1,49 @@
+{
+  "name": "multi-sig-test",
+  "version": "0.0.1",
+  "main": "src/app/generate.ts",
+  "scripts": {
+    "start": "bun run src/app/generate.ts",
+    "lint": "eslint --ext .js,.ts .",
+    "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\""
+  },
+  "keywords": [
+    "bun"
+  ],
+  "license": "MIT",
+  "author": "Shishir Pai (mgpai22@github.com)",
+  "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "bun-plugin-dts": "^0.1.0",
+    "bun-types": "^1.0.1",
+    "eslint": "^8.0.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-promise": "^6.0.0",
+    "prettier": "^3.2.4",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "@fleet-sdk/common": "^0.2.3",
+    "@fleet-sdk/compiler": "^0.3.2",
+    "@fleet-sdk/core": "^0.3.4",
+    "@fleet-sdk/crypto": "^0.3.4",
+    "@fleet-sdk/serializer": "^0.2.3",
+    "axios": "^1.5.1",
+    "bip32": "^4.0.0",
+    "crypto-js": "^4.2.0",
+    "crypto.js": "^3.2.1",
+    "dotenv": "^16.3.1",
+    "ergo-lib-wasm-nodejs": "^0.26.0",
+    "json-big": "^1.0.2",
+    "pino": "^8.17.2",
+    "pino-pretty": "^10.3.1",
+    "sigmastate-js": "^0.4.2",
+    "tiny-secp256k1": "^2.2.3"
+  }
+}

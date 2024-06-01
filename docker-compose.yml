@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - ./params.json:/usr/src/app/params.json
+    restart: always
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
