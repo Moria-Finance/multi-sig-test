@@ -11,7 +11,7 @@ import {
   UnsignedTransaction,
   Wallet,
 } from 'ergo-lib-wasm-nodejs';
-import { decrypt } from 'dotenv';
+import { decrypt } from '../utils/enc';
 
 export interface HintType {
   hint: string;
@@ -84,8 +84,6 @@ const generateHintBagJson = (
     position: `0-${index}`,
   };
   if (secret && password) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
     res['secret'] = decrypt(secret, password).toString('hex');
   }
   return res;
