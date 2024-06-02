@@ -98,11 +98,11 @@ const zips = addresses.map((address, index, array) => {
   return { address: address , pub_keys: keys[index] } 
 })
 console.log("addresses: ", addresses)
-const msig = generateMultiSigV1AddressFromPublicKeys(publicKeys, 2, 0);
-const msig_name = "moria_test_wallet_" + Date.now()
+const msig_name = "moria_test_wallet"
 const msig_size = 2
 const msig_threshold = 2
 const msig_creator = addresses[0]
+const msig = generateMultiSigV1AddressFromPublicKeys(publicKeys, msig_threshold, network);
 
 const generateEmptyCommitData = (ring_size: number) => {
 
@@ -117,26 +117,63 @@ const generateEmptyCommitData = (ring_size: number) => {
 
 // SUPABASE: Insert multisig wallet info into the db.
 
-// 1. add channel
-const channel_name = msig_name + '_' + Date.now()
-const channel = supabase.channel(channel_name)
+// 1. add channel and subscribe user to it
+const channel_name = "moria_test_channel"
+const channel_name_id = channel_name + '_' + Date.now()
+const channel = supabase.channel(channel_name_id, {
+  config: {
+    broadcast: { ack: true }
+  }
+})
 
 const channel_data = await supabase
   .from('msig_channel')
   .insert({
-  name: channel_name,
-  creator: msig_creator,
-  members: [msig_creator]
+    id: channel_name_id,
+    name: channel_name,
+    creator: msig_creator
   })
   .select()
 
 if (channel_data.data) {
   console.log("channel_data: ", channel_data.data)
+
+  // 2. connect user with channel
+  // channel.subscribe(async (status) => {
+  //   if (status !== 'SUBSCRIBED') {
+  //     return
+  //   }
+
+  //   const response = await channel.send({
+  //     type: 'broadcast',
+  //     event: 'acknowledge',
+  //     payload: { message: 'Hello, I created my first wallet in this new channel!' }
+  //   })
+
+  //   console.log("realtime response: ", response)
+
+  // })
+
+  const channel_user_connect = await supabase
+  .from('msig_channel_msig_user')
+  .insert(
+    {
+      channel: channel_data.data[0].id,
+      member: msig_creator
+    }
+  )
+  .select()
+  if (channel_user_connect.data) {
+    console.log(channel_user_connect.data)
+  } else {
+    console.log(channel_user_connect.error)
+  }
+
 } else {
   console.log("channel_error: ", channel_data.error)
 }
 
-// 2. add msig data
+// 3. add msig data
 // get channel
 const channel_id = await supabase
   .from('msig_channel')
@@ -164,10 +201,10 @@ if (channel_id.data) {
     console.log("multisig_error: ", msig_data.error)
   }
 
+
 } else {
   console.log("failed to get channel id: ", channel_id.error)
 }
-
 
 // SUPABASE: Add confirmed user for testing
 // const addUser = async (address: string) => {
@@ -177,7 +214,7 @@ if (channel_id.data) {
 //     await supabase
 //       .from('confirmed_users')
 //       .insert({
-//         address: addresses[0],
+//         address: address,
 //         metadata: { status: "test_user" }
 //       })
 

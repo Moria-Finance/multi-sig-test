@@ -10,6 +10,14 @@ import { ErgoContext } from '../rust/ErgoContext';
 import { BackendWallet } from '../rust/BackendWallet';
 import { hex } from '@fleet-sdk/crypto';
 import { commit } from '../multisig/commitment';
+import { SupabaseClient, createClient } from '@supabase/supabase-js';
+import { sign } from 'tiny-secp256k1';
+
+// SUPABASE: Initialize supabase client.
+const supabase_url = process.env.SUPABASE_LINK as string
+const supabase_service_key = process.env.SUPABASE_SERVICE_KEY as string
+console.log(supabase_url, supabase_service_key)
+const supabase: SupabaseClient = createClient(supabase_url, supabase_service_key)
 
 const mnemonic =
   'rapid cupboard parrot young diagram animal execute couch remind enlist crash duck draft shoulder fashion';
@@ -30,8 +38,16 @@ const { nodeUrl, explorerApi } = params;
 const explorer = new ExplorerAPI(explorerApi);
 const node = new NodeAPI(nodeUrl);
 
-const address =
-  'gG26HKJqFfxo7wEyBmjX7BYZURh3pojtMdxhuf3jcVR5QdUgR2rxLMxQqDnVCL77Q3YL5KncqftcD8JaAjcdQ45tRgZDQruFF9aihKaeT3bnFAVWSnvog5c58';
+// SUPABASE: Get msig wallet for commitment
+const msig_channel_id = 'moria_test_channel_1717286701644'
+const msig_data = await supabase
+  .from('msig_wallet')
+  .select()
+  .eq('channel', msig_channel_id)
+if (msig_data.error) throw msig_data.error
+console.log(msig_data.data)
+
+const address = msig_data.data[0].msig_address
 
 const inputs = await getInputBoxes(explorer, address, BigInt('1000000000'));
 
@@ -49,6 +65,7 @@ const tx = await transactionHelper.buildTransaction(
   address,
 );
 
+
 const ergoContext = new ErgoContext(node);
 const ctx = await ergoContext.getStateContext();
 
@@ -56,21 +73,12 @@ const reducedTransaction = getReducedTransaction(tx, ctx);
 
 const wasmInputs = ErgoBox.from_json(JSON.stringify(tx.inputs[0]));
 
-const data = {
-  commitments: [['', '']],
-  secrets: [['', '']],
-  signed: [],
-  simulated: [],
-};
+const data = msig_data.data[0].empty_commit_data
 
 const wallet = new BackendWallet(mnemonic, mnemonicPw, Network.Testnet); // PC
 
 const pks: { [address: string]: string[] } = {
-  gG26HKJqFfxo7wEyBmjX7BYZURh3pojtMdxhuf3jcVR5QdUgR2rxLMxQqDnVCL77Q3YL5KncqftcD8JaAjcdQ45tRgZDQruFF9aihKaeT3bnFAVWSnvog5c58:
-    [
-      '02aa9ef05d5a178d53bd34be0730c958f82155307e7e2e2a436f60a5414dbcaf04',
-      '03ef05f4324f39ddeb57e21c88e5c9d3ed2653af30aeec65b70f836ce259a69a20',
-    ],
+  [msig_data.data[0].msig_address]: msig_data.data[0].signers.map((signer: { address: string, pub_keys: string[] }) => signer.pub_keys[0])
 };
 
 const commitmentResult = await commit(
@@ -82,7 +90,47 @@ const commitmentResult = await commit(
   pks,
 );
 
+const commit_removed_secrets = {
+
+  signed: commitmentResult.signed,
+  secrets: data.secrets,
+  simulated: commitmentResult.simulated,
+  commitments: commitmentResult.commitments
+
+}
+
 const reducedTxBytes = hex.encode(reducedTransaction.sigma_serialize_bytes());
 
 console.log(reducedTxBytes);
 console.log(commitmentResult);
+
+// SUPABASE: Store unsigned transaction
+const unsigned_tx = await supabase 
+  .from('msig_unsigned_tx')
+  .insert({
+    commit_status: "STARTED",
+    sign_status: "PENDING",
+    commit_data: commit_removed_secrets,
+    creator: msig_data.data[0].creator, // does not have to be this person.
+    msig_wallet: msig_data.data[0].id,
+    reduced_tx_hex: reducedTxBytes,
+    unsigned_tx: tx,
+    signature_data: null
+  })
+  .select()
+
+if (unsigned_tx.error) throw unsigned_tx.error
+console.log(unsigned_tx.data)
+
+// SUPABASE: Store user secrets
+const user_secrets = await supabase
+  .from('msig_user_commit_msig_unsigned_tx')
+  .insert({
+    msig_user: unsigned_tx.data[0].creator,
+    msig_unsigned_tx: unsigned_tx.data[0].id,
+    commit_secrets: commitmentResult.secrets
+  })
+  .select()
+
+if (user_secrets.error) throw user_secrets.error
+console.log(user_secrets.data)
