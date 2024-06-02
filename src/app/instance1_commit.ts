@@ -39,13 +39,13 @@ const node = new NodeAPI(nodeUrl);
 
 // SUPABASE: Get msig wallet for commitment
 // In production, get channel based on msig_channel_msig_user join table (i.e. check what channels user belongs to, then subscribe them to it.)
-const msig_channel_id = 'moria_test_channel_1717286701644'
+const msig_channel_id = 'moria_test_channel_1717289390298'
 const msig_data = await supabase
   .from('msig_wallet')
   .select()
   .eq('channel', msig_channel_id)
 if (msig_data.error) throw msig_data.error
-console.log(msig_data.data)
+console.log("retrieved wallet data: ", msig_data.data)
 
 const address = msig_data.data[0].msig_address
 
@@ -120,7 +120,7 @@ const unsigned_tx = await supabase
   .select()
 
 if (unsigned_tx.error) throw unsigned_tx.error
-console.log(unsigned_tx.data)
+console.log("unsigned_tx data: ", unsigned_tx.data)
 
 // SUPABASE: Store user secrets
 const user_secrets = await supabase
@@ -133,4 +133,4 @@ const user_secrets = await supabase
   .select()
 
 if (user_secrets.error) throw user_secrets.error
-console.log(user_secrets.data)
+console.log("user secrets: ", user_secrets.data)

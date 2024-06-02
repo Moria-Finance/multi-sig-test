@@ -135,8 +135,8 @@ const channel_data = await supabase
   })
   .select()
 
-if (channel_data.data) {
-  console.log("channel_data: ", channel_data.data)
+if (channel_data.error) throw channel_data.error
+console.log("channel_data: ", channel_data.data)
 
   // 2. connect user with channel
   // channel.subscribe(async (status) => {
@@ -154,7 +154,7 @@ if (channel_data.data) {
 
   // })
 
-  const channel_user_connect = await supabase
+const channel_user_connect = await supabase
   .from('msig_channel_msig_user')
   .insert([
     {
@@ -168,48 +168,26 @@ if (channel_data.data) {
   ]
   )
   .select()
-  if (channel_user_connect.data) {
-    console.log(channel_user_connect.data)
-  } else {
-    console.log(channel_user_connect.error)
-  }
-
-} else {
-  console.log("channel_error: ", channel_data.error)
-}
+if (channel_user_connect.error) throw channel_user_connect.error
+console.log("channel_user_connect_data: ", channel_user_connect.data)
 
 // 3. add msig data
-// get channel
-const channel_id = await supabase
-  .from('msig_channel')
-  .select('id')
-  .eq('name', channel_name)
-
-if (channel_id.data) {
-  const msig_data = await supabase
-  .from('msig_wallet')
-  .insert({
-    name: msig_name,
-    ring_size: msig_size,
-    ring_threshold: msig_threshold,
-    empty_commit_data: generateEmptyCommitData(msig_size),
-    msig_address: msig,
-    creator: msig_creator,
-    channel: channel_id.data[0].id,
-    signers: zips
-  })
-  .select()
+const msig_data = await supabase
+.from('msig_wallet')
+.insert({
+  name: msig_name,
+  ring_size: msig_size,
+  ring_threshold: msig_threshold,
+  empty_commit_data: generateEmptyCommitData(msig_size),
+  msig_address: msig,
+  creator: msig_creator,
+  channel: channel_data.data[0].id,
+  signers: zips
+})
+.select()
   
-  if (msig_data.data) {
-    console.log("multisig_data: ", msig_data.data)
-  } else {
-    console.log("multisig_error: ", msig_data.error)
-  }
-
-
-} else {
-  console.log("failed to get channel id: ", channel_id.error)
-}
+if (msig_data.error) throw msig_data.error
+console.log("multisig_data: ", msig_data.data)
 
 // SUPABASE: Add confirmed user for testing
 // const addUser = async (address: string) => {
