@@ -199,13 +199,13 @@ console.log(JSON.stringify(signResult));
 
 const getSignStatus = (signature: any, wallet: any) => {
 
-  const threshold = wallet.msig_threshold
-  const size = wallet.msig_size
+  const threshold = wallet.ring_threshold
+  const size = wallet.ring_size
   const signed = signature.signed.length
   
   if (threshold == signed) {
     return "THRESHOLD_REACHED"
-  } else if (threshold > signed) {
+  } else if (threshold < signed) {
     return "THRESHOLD_EXCEEDED"
   } else if (size == signed) {
     return "RING_COMPLETE"

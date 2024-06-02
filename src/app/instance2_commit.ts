@@ -107,13 +107,13 @@ const commit_removed_secrets = {
 
 const getCommitStatus = (commit: any, wallet: any) => {
 
-  const threshold = wallet.msig_threshold
-  const size = wallet.msig_size
+  const threshold = wallet.ring_threshold
+  const size = wallet.ring_size
   const committed = commit.commitments[0].filter((commit: string) => commit.length > 0).length
   
   if (threshold == committed) {
     return "THRESHOLD_REACHED"
-  } else if (threshold > committed) {
+  } else if (threshold < committed) {
     return "THRESHOLD_EXCEEDED"
   } else if (size == committed) {
     return "RING_COMPLETE"
