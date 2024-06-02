@@ -95,7 +95,7 @@ const network = (process.env.NETWORK === "mainnet") ? Network.Mainnet : Network.
 const keys = publicKeys.map((key) => [key])
 const addresses = publicKeys.map((key) => ErgoAddress.fromPublicKey(key, network).toString(network))
 const zips = addresses.map((address, index, array) => { 
-  return { address: address , pub_keys: keys[index] } 
+  return { address: address , pubKeys: keys[index] } 
 })
 console.log("addresses: ", addresses)
 const msig_name = "moria_test_wallet"

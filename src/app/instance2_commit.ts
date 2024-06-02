@@ -115,7 +115,7 @@ const getCommitStatus = (commit: any, wallet: any) => {
     return "THRESHOLD_REACHED"
   } else if (threshold > committed) {
     return "THRESHOLD_EXCEEDED"
-  } else if (committed == size) {
+  } else if (size == committed) {
     return "RING_COMPLETE"
   } else {
     return "STARTED"
@@ -126,7 +126,7 @@ const getCommitStatus = (commit: any, wallet: any) => {
 const update_unsigned_tx = await supabase 
   .from('msig_unsigned_tx')
   .update({
-    commit_status: getCommitStatus(commit_removed_secrets, msig_wallet),
+    commit_status: getCommitStatus(commit_removed_secrets, msig_wallet.data[0]),
     commit_data: commit_removed_secrets
   })
   .eq('id', unsigned_tx.id)
