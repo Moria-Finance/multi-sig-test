@@ -156,11 +156,16 @@ if (channel_data.data) {
 
   const channel_user_connect = await supabase
   .from('msig_channel_msig_user')
-  .insert(
+  .insert([
     {
       channel: channel_data.data[0].id,
-      member: msig_creator
+      member: addresses[0]
+    },
+    {
+      channel: channel_data.data[0].id,
+      member: addresses[1]
     }
+  ]
   )
   .select()
   if (channel_user_connect.data) {
