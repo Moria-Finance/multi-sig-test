@@ -11,7 +11,6 @@ import { BackendWallet } from '../rust/BackendWallet';
 import { hex } from '@fleet-sdk/crypto';
 import { commit } from '../multisig/commitment';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
-import { sign } from 'tiny-secp256k1';
 
 // SUPABASE: Initialize supabase client.
 const supabase_url = process.env.SUPABASE_LINK as string
@@ -39,6 +38,7 @@ const explorer = new ExplorerAPI(explorerApi);
 const node = new NodeAPI(nodeUrl);
 
 // SUPABASE: Get msig wallet for commitment
+// In production, get channel based on msig_channel_msig_user join table (i.e. check what channels user belongs to, then subscribe them to it.)
 const msig_channel_id = 'moria_test_channel_1717286701644'
 const msig_data = await supabase
   .from('msig_wallet')
